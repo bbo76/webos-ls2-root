@@ -21,7 +21,7 @@ trap cleanup EXIT INT TERM
 
 echo "=== webOS Bootstrap ==="
 
-# Vérifier qu'un autre serveur n'utilise pas le port.
+# Check whether another server is using the port.
 if lsof -nP -iTCP:"$PORT" -sTCP:LISTEN >/dev/null 2>&1; then
     echo "ERROR: Port $PORT already in use." >&2
     exit 1

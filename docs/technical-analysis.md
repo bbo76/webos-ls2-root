@@ -1,80 +1,80 @@
-# Analyse technique — webOS LS2 Root
+# Technical Analysis — webOS LS2 Root
 
-## 1. Environnement testé
+## 1. Tested Environment
 
-| Élément             | Valeur                 |
-| ------------------- | ---------------------- |
-| Téléviseur          | LG OLED55C35LA (C3)    |
-| Version du firmware | 43.21.96               |
-| Date du test        | 1er novembre 2026      |
-| Accès initial       | SSH via Developer Mode |
-| Compte SSH          | `prisoner` (UID 5693)  |
-| Homebrew Channel    | 0.7.3                  |
+| Item                 | Value                  |
+| -------------------- | ---------------------- |
+| TV                   | LG OLED55C35LA (C3)    |
+| Firmware version     | 43.21.96               |
+| Test date            | November 1, 2026       |
+| Initial access       | SSH via Developer Mode |
+| SSH account          | `prisoner` (UID 5693)  |
+| Homebrew Channel     | 0.7.3                  |
 
-Ces observations concernent un seul téléviseur. La compatibilité avec d'autres versions de webOS reste à vérifier.
+These observations apply to one TV. Compatibility with other webOS versions remains to be verified.
 
-## 2. Découverte : exécution privilégiée via LS2
+## 2. Discovery: Privileged Execution via LS2
 
-Luna Service 2 (LS2) est le mécanisme de communication entre services utilisé par webOS.
+Luna Service 2 (LS2) is the inter-service communication mechanism used by webOS.
 
-Notre expérimentation a montré qu'un manifeste chargé dynamiquement depuis l'environnement Developer Mode pouvait enregistrer un service dont l'exécution aboutissait à des privilèges root.
+Our experiment showed that a manifest loaded dynamically from the Developer Mode environment could register a service that ran with root privileges.
 
-### Mécanisme observé
+### Observed Mechanism
 
-1. Préparation d'un manifeste LS2 et d'une définition de service dynamique.
-2. Chargement du manifeste depuis une page web exécutée sur le téléviseur, via `PalmServiceBridge` et `com.webos.service.bus/addManifestsDir`.
-3. Invocation du service nouvellement enregistré.
-4. Exécution d'un script de diagnostic.
-5. Observation de `uid=0(root)` dans les résultats.
+1. Prepare an LS2 manifest and a dynamic service definition.
+2. Load the manifest from a web page running on the TV, using `PalmServiceBridge` and `com.webos.service.bus/addManifestsDir`.
+3. Invoke the newly registered service.
+4. Run a diagnostic script.
+5. Observe `uid=0(root)` in the output.
 
-### Contexte d'exécution observé
+### Observed Execution Context
 
-- Processus parent : `ls-hubd`
-- UID effectif : `0`
-- GID effectif : `0`
-- `NoNewPrivs` : `0`
-- `Seccomp` : `0`
+- Parent process: `ls-hubd`
+- Effective UID: `0`
+- Effective GID: `0`
+- `NoNewPrivs`: `0`
+- `Seccomp`: `0`
 
-**À déterminer :** pourquoi cette configuration autorise une exécution privilégiée et quelles vérifications de sécurité sont appliquées lors de l'enregistrement du manifeste.
+**To determine:** why this configuration permits privileged execution and what security checks are applied when registering the manifest.
 
-## 3. Persistance
+## 3. Persistence
 
-Un manifeste distinct a été enregistré dans `/var/luna-service2-dev`, un emplacement consulté par LS2.
+A separate manifest was registered in `/var/luna-service2-dev`, a location scanned by LS2.
 
-Après un redémarrage du téléviseur, le service pouvait de nouveau être appelé sans recharger manuellement le manifeste temporaire.
+After restarting the TV, the service could be called again without manually reloading the temporary manifest.
 
-Cette observation démontre la persistance de son enregistrement à travers le redémarrage testé.
+This observation demonstrates that the registration persisted across the tested restart.
 
-Elle ne démontre pas une exécution automatique au démarrage : le service dynamique est lancé à la demande.
+It does not demonstrate automatic execution at startup: the dynamic service is launched on demand.
 
-## 4. Installation Homebrew Channel
+## 4. Homebrew Channel Installation
 
-L'installation officielle de Homebrew Channel 0.7.3 a été effectuée à partir du contexte root obtenu.
+The official Homebrew Channel 0.7.3 installation was performed from the obtained root context.
 
-Le processus d'installation a modifié la définition du service Homebrew et ses autorisations LS2.
+The installation process modified the Homebrew service definition and its LS2 permissions.
 
-Résultats constatés :
+Observed results:
 
-- Installation réussie.
-- `Root status: OK` dans Homebrew Channel.
-- `Root status: OK` après redémarrage du téléviseur.
-- Désactivation de Telnet par le marqueur de configuration Homebrew.
+- Installation succeeded.
+- `Root status: OK` in Homebrew Channel.
+- `Root status: OK` after restarting the TV.
+- Telnet was disabled by the Homebrew configuration marker.
 
-## 5. Limites et inconnues
+## 5. Limitations and Open Questions
 
-Les éléments suivants restent à étudier :
+The following remain to be studied:
 
-- Reproductibilité depuis un environnement Developer Mode propre.
-- Comportement après un cycle complet d'alimentation.
-- Comportement après une mise à jour du firmware.
-- Effet de la désactivation ou de l'expiration du Developer Mode.
-- Contrôles d'autorisation sur les appels LS2.
-- Nettoyage complet des services expérimentaux.
+- Reproducibility from a clean Developer Mode environment.
+- Behavior after a full power cycle.
+- Behavior after a firmware update.
+- Effect of disabling or expiring Developer Mode.
+- Authorization checks on LS2 calls.
+- Complete cleanup of experimental services.
 
-## 6. Considérations de sécurité
+## 6. Security Considerations
 
-Le service expérimental utilisait un script modifiable depuis l'environnement Developer Mode, mais exécuté avec les privilèges root.
+The experimental service used a script that could be modified from the Developer Mode environment but ran with root privileges.
 
-Il s'agit d'une configuration à risque, adaptée à un laboratoire de recherche temporaire mais pas à une installation permanente.
+This is a risky configuration suited to a temporary research lab, not a permanent installation.
 
-Le projet doit donc prévoir un nettoyage contrôlé des composants expérimentaux, sans modifier les scripts LG signés ni les fichiers nécessaires au fonctionnement de Homebrew Channel.
+The project should provide controlled cleanup of experimental components without modifying LG-signed scripts or files required by Homebrew Channel.

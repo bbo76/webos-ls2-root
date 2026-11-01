@@ -199,7 +199,7 @@ if TV_HOST="$TV" "$ROOT/scripts/verify.sh"; then
 
     echo "Root execution verified."
 
-    # Publier le résultat vérifié pour la page TV.
+    # Publish the verified result for the TV page.
     python3 - "$STATUS" <<'PY'
 import json
 import sys
@@ -211,8 +211,8 @@ with open(sys.argv[1], "w", encoding="utf-8") as f:
     }, f)
 PY
 
-    # Laisser le navigateur récupérer le statut
-    # avant l'arrêt du mini-serveur.
+    # Let the browser retrieve the status before
+    # stopping the small server.
     sleep 5
 
 else

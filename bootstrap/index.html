@@ -1,107 +1,109 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>webOS LS2 Bootstrap</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#101820">
+    <title>webOS LS2 · Bootstrap</title>
 
     <style>
-        * {
-            box-sizing: border-box;
+        :root {
+            color-scheme: dark;
+            font-family: "LG Smart UI", "Segoe UI", Arial, sans-serif;
+            background: #101820;
+            color: #f4f7f8;
+            font-synthesis: none;
+            text-rendering: optimizeLegibility;
+            --surface: #1b2730;
+            --line: #34434d;
+            --subtle: #afbdc4;
+            --cyan: #63e6e2;
+            --green: #70e0a0;
+            --amber: #ffd166;
+            --red: #ff8585;
         }
+
+        * { box-sizing: border-box; }
 
         body {
+            min-width: 320px;
+            min-height: 100vh;
             margin: 0;
-            padding: 48px;
-            background: #111827;
-            color: #f9fafb;
-            font-family: Arial, sans-serif;
+            padding: clamp(28px, 5vh, 64px) clamp(28px, 6vw, 96px);
+            background: #101820;
         }
 
-        main {
-            max-width: 900px;
-            margin: 0 auto;
-        }
+        main { width: min(100%, 1280px); margin: 0 auto; }
 
         header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 20px;
+            gap: 32px;
+            margin-bottom: clamp(32px, 6vh, 68px);
         }
 
         h1 {
-            margin: 0 0 8px;
-            font-size: 36px;
+            margin: 0;
+            font-size: clamp(34px, 4vw, 52px);
+            font-weight: 600;
+            letter-spacing: -.035em;
         }
 
-        p {
-            color: #9ca3af;
-            font-size: 18px;
-        }
+        header p { margin: 10px 0 0; color: var(--subtle); font-size: 20px; }
+        .version { color: var(--subtle); font-size: 16px; white-space: nowrap; }
 
-        .version {
-            background: #374151;
-            border-radius: 24px;
-            padding: 10px 18px;
-            white-space: nowrap;
-        }
-
-        .panel,
-        .slider-panel {
-            margin-top: 28px;
-            padding: 28px;
-            background: #1f2937;
-            border: 1px solid #374151;
-            border-radius: 18px;
+        .status-board {
+            padding: 8px 32px;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 20px;
         }
 
         .line {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            padding: 17px 0;
-            gap: 20px;
-            border-bottom: 1px solid #374151;
-            font-size: 20px;
+            justify-content: space-between;
+            gap: 24px;
+            min-height: 76px;
+            border-bottom: 1px solid var(--line);
+            font-size: clamp(19px, 2vw, 25px);
         }
 
-        .line:last-child {
-            border-bottom: none;
-        }
-
-        .ok {
-            color: #4ade80;
-        }
-
-        .warn {
-            color: #fbbf24;
-        }
-
-        .err {
-            color: #fb7185;
-        }
-
-        .muted {
-            color: #9ca3af;
-        }
+        .line:last-child { border-bottom: 0; }
+        .line strong { font-weight: 600; text-align: right; }
+        .ok { color: var(--green); }
+        .warn { color: var(--amber); }
+        .err { color: var(--red); }
+        .muted { color: var(--subtle); }
 
         .slider-panel {
+            --slider-progress: 0%;
+            --rail-idle: #53666f;
+            margin-top: 28px;
+            padding: clamp(28px, 4vw, 52px) clamp(24px, 5vw, 64px);
+            background: #24343d;
+            border: 1px solid #40545d;
+            border-radius: 20px;
             text-align: center;
         }
 
         #slider-label {
             display: block;
-            margin-bottom: 28px;
-            font-size: 28px;
-            font-weight: bold;
+            margin-bottom: 16px;
+            font-size: clamp(26px, 3vw, 38px);
+            font-weight: 600;
+            letter-spacing: -.025em;
         }
 
         #start-slider {
+            position: relative;
+            z-index: 2;
             width: 100%;
-            height: 96px;
-            margin: 0;
+            height: 108px;
+            margin: 8px 0 0;
+            padding: 0;
             background: transparent;
             cursor: pointer;
             -webkit-appearance: none;
@@ -109,70 +111,159 @@
         }
 
         #start-slider::-webkit-slider-runnable-track {
-            height: 60px;
-            background: #374151;
-            border: 2px solid #4b5563;
-            border-radius: 40px;
+            height: 1px;
+            background: transparent;
         }
 
         #start-slider::-webkit-slider-thumb {
-            width: 88px;
-            height: 88px;
-            margin-top: -16px;
-            background: #2563eb;
-            border: 5px solid #bfdbfe;
-            border-radius: 50%;
+            width: 76px;
+            height: 76px;
+            margin-top: -37px;
+            background: transparent;
+            border: 0;
             -webkit-appearance: none;
             appearance: none;
-            box-shadow: 0 4px 18px rgba(0, 0, 0, .45);
         }
 
-        #start-slider:focus {
-            outline: none;
+        .slider-track {
+            position: relative;
+            height: 108px;
+            padding: 0 36px;
+            --fill-scale: 0;
+            --fill-color: var(--cyan);
         }
 
-        #start-slider:focus::-webkit-slider-thumb {
-            box-shadow: 0 0 0 9px rgba(59, 130, 246, .25);
+        .slider-track::before,
+        .slider-track::after {
+            position: absolute;
+            z-index: 1;
+            top: 50%;
+            left: 36px;
+            content: "";
+            pointer-events: none;
+            transform: translateY(-50%);
         }
 
-        #start-slider:disabled {
-            opacity: .5;
+        .slider-track::before {
+            right: 36px;
+            height: 20px;
+            background: #53666f;
+            border: 2px solid rgba(231, 247, 247, .7);
+            border-radius: 20px;
+            box-shadow: inset 0 3px 6px rgba(0, 0, 0, .34), 0 4px 12px rgba(0, 0, 0, .2);
         }
 
-        #slider-progress {
-            margin-top: 12px;
-            font-size: 25px;
-            font-weight: bold;
-            color: #93c5fd;
+        .slider-track::after {
+            right: 36px;
+            height: 12px;
+            background: linear-gradient(90deg, #40bfc0, #8bfff1);
+            border-radius: 12px;
+            transform: translateY(-50%) scaleX(var(--fill-scale));
+            transform-origin: left center;
+            transition: transform 120ms ease-out, background 220ms ease-out;
         }
 
-        .help {
-            margin-top: 14px;
-            color: #9ca3af;
-            font-size: 17px;
+        .slider-thumb {
+            position: absolute;
+            z-index: 3;
+            top: 50%;
+            left: 36px;
+            display: grid;
+            width: 76px;
+            height: 76px;
+            place-items: center;
+            pointer-events: none;
+            background: linear-gradient(145deg, #a9fff4, #4bd5d4 56%, #1c9eaa);
+            border: 5px solid #efffff;
+            border-radius: 26px;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, .4), inset 0 2px 5px rgba(255, 255, 255, .35);
+            transform: translate(-50%, -50%);
         }
 
-        h3 {
-            margin-top: 30px;
+        .slider-thumb::before {
+            width: 18px;
+            height: 22px;
+            content: "";
+            background: #124d57;
+            clip-path: polygon(0 0, 42% 0, 100% 50%, 42% 100%, 0 100%, 58% 50%);
         }
+
+        .slider-panel.is-ready:not(.is-engaged) .slider-thumb {
+            animation: unlock-invite 1.25s cubic-bezier(.16, 1, .3, 1) 2 both;
+        }
+
+        @keyframes unlock-invite {
+            0%, 100% { transform: translate(-50%, -50%); }
+            58% { transform: translate(-50%, -50%) translateX(84px); }
+        }
+
+        .slider-panel.is-ready:not(.is-engaged) .slider-thumb::before {
+            animation: arrow-shift 1.25s ease-out 2 both;
+        }
+
+        @keyframes arrow-shift {
+            0%, 100% { opacity: 1; transform: translateX(0); }
+            58% { opacity: .55; transform: translateX(2px); }
+        }
+
+        .slider-panel.is-complete .slider-track { --fill-scale: 1; }
+        .slider-panel.is-complete .slider-track::after { background: linear-gradient(90deg, #49d897, #a5f4c5); }
+        .slider-panel.is-complete .slider-thumb { background: linear-gradient(145deg, #a5f4c5, #49d897); }
+
+        #start-slider:focus { outline: 4px solid var(--cyan); outline-offset: -7px; border-radius: 30px; }
+        #start-slider:disabled { cursor: default; opacity: .5; }
+        #slider-progress { margin-top: 4px; color: var(--cyan); font-size: 24px; font-weight: 600; font-variant-numeric: tabular-nums; }
+        .help { margin: 14px 0 0; color: var(--subtle); font-size: 18px; }
+
+        .log-section { margin-top: 32px; }
+        h2 { margin: 0 0 14px; font-size: 21px; font-weight: 600; }
 
         pre {
-            min-height: 210px;
-            max-height: 340px;
+            min-height: 96px;
+            max-height: 220px;
+            margin: 0;
             overflow: auto;
-            padding: 24px;
-            background: #030712;
-            color: #86efac;
-            border-radius: 14px;
-            font-size: 16px;
-            line-height: 1.7;
+            padding: 18px 22px;
+            background: #0b1218;
+            color: #c6d7dc;
+            border: 1px solid #293943;
+            border-radius: 12px;
+            font-family: "SFMono-Regular", Consolas, monospace;
+            font-size: 15px;
+            line-height: 1.6;
             white-space: pre-wrap;
             overflow-wrap: anywhere;
+        }
+
+        ::selection { background: #245b61; color: #fff; }
+        :focus-visible { outline-color: var(--cyan); }
+
+        @media (max-width: 700px) {
+            body { padding: 24px 20px; }
+            header { margin-bottom: 30px; }
+            .status-board { padding: 4px 18px; }
+            .line { min-height: 64px; font-size: 18px; }
+            .slider-panel { margin-top: 18px; }
+            .help { font-size: 16px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .slider-panel.is-ready .slider-thumb,
+            .slider-panel.is-ready .slider-thumb::before { animation: none; }
+            .slider-track::after { transition: none; }
         }
     </style>
 </head>
 
 <body>
+    <!--
+        THESIS: A webOS setup screen where each step's result is the clearest thing on screen.
+        OWN-WORLD: Deep blue-green TV surfaces, crisp system type, cyan control focus, semantic result colors.
+        STORY: Check the bridge and session, move the remote slider, then read registration and root verification separately.
+        FIRST VIEWPORT: Header above a four-row status board; a broad central slide-to-unlock control; a compact execution log below.
+        FORM: Grounded direction 3 of 7; degraded seed 683c58b1, no challengers available.
+        FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
+    -->
     <main>
 
         <header>
@@ -183,44 +274,49 @@
             <span class="version">V0.2</span>
         </header>
 
-        <div class="panel">
+        <section class="status-board" aria-label="Bootstrap step results" aria-live="polite">
             <div class="line">
                 <span>PalmServiceBridge</span>
-                <strong id="bridge" class="muted">Vérification...</strong>
+                <strong id="bridge" class="muted">Checking...</strong>
             </div>
 
             <div class="line">
-                <span>Session locale</span>
-                <strong id="session" class="muted">Initialisation...</strong>
+                <span>Local session</span>
+                <strong id="session" class="muted">Initializing...</strong>
             </div>
 
             <div class="line">
                 <span>Bootstrap LS2</span>
-                <strong id="bootstrap" class="warn">En attente</strong>
+                <strong id="bootstrap" class="warn">Waiting</strong>
             </div>
 
             <div class="line">
-                <span>Vérification root</span>
-                <strong id="root" class="muted">Non vérifiée</strong>
+                <span>Root verification</span>
+                <strong id="root" class="muted">Not verified</strong>
             </div>
-        </div>
+        </section>
 
-        <div class="slider-panel">
+        <section class="slider-panel" aria-label="Start bootstrap">
             <label id="slider-label" for="start-slider">
-                Glisser pour démarrer
+                Slide to start
             </label>
 
-            <input id="start-slider" type="range" min="0" max="100" step="10" value="0" disabled>
+            <div class="slider-track">
+                <input id="start-slider" type="range" min="0" max="100" step="10" value="0" aria-valuetext="0 percent" disabled>
+                <span class="slider-thumb" aria-hidden="true"></span>
+            </div>
 
-            <div id="slider-progress">0 %</div>
+            <output id="slider-progress" for="start-slider">0%</output>
 
             <div class="help">
-                Utilise la Magic Remote ou les touches gauche/droite.
+                Use the Magic Remote or the left/right arrow keys.
             </div>
-        </div>
+        </section>
 
-        <h3>Journal d'exécution</h3>
-        <pre id="logs"></pre>
+        <section class="log-section" aria-label="Execution log">
+            <h2>Execution log</h2>
+            <pre id="logs"></pre>
+        </section>
 
     </main>
 
@@ -233,6 +329,7 @@
             }
 
             var slider = $("start-slider");
+            var sliderPanel = document.querySelector(".slider-panel");
             var progress = $("slider-progress");
             var sliderLabel = $("slider-label");
 
@@ -261,9 +358,19 @@
                 element.className = className;
             }
 
+            function updateSlider(value) {
+                var percent = Number(value);
+                var track = slider.parentElement;
+                track.style.setProperty("--fill-scale", percent / 100);
+                track.querySelector(".slider-thumb").style.left =
+                    (36 + (track.clientWidth - 72) * percent / 100) + "px";
+                slider.setAttribute("aria-valuetext", percent + " percent");
+                progress.textContent = percent + "%";
+            }
+
             function report(state, message) {
                 if (!token) {
-                    log("ERREUR : jeton de session absent");
+                    log("ERROR: missing session token");
                     return Promise.reject(
                         new Error("Missing session token")
                     );
@@ -295,17 +402,17 @@
             // ==================================================
 
             function registerManifest() {
-                log("Étape d'enregistrement LS2 demandée");
+                log("LS2 registration requested");
                 var uri = "luna://com.webos.service.bus/addManifestsDir";
                 var prefix = "/media/developer/temp/ls2root-v01";
                 var dirpath = "reference-test";
                 var parameters = { prefix: prefix, dirpath: dirpath };
-                var label = "Charger";
+                var label = "Load";
 
                 return new Promise(function (resolve, reject) {
                     if (typeof window.PalmServiceBridge !== "function") {
-                        var unavailable = new Error("PalmServiceBridge est indisponible. Ouvrez cette page dans tinybrowser sur la TV webOS.");
-                        log(label + " — erreur", { message: unavailable.message }, true); reject(unavailable); return;
+                        var unavailable = new Error("PalmServiceBridge is unavailable. Open this page in tinybrowser on the webOS TV.");
+                        log(label + " — error: " + unavailable.message); reject(unavailable); return;
                     }
                     var settled = false;
                     var bridge;
@@ -320,17 +427,17 @@
                             } catch (error) {
                                 finish(
                                     reject,
-                                    new Error("Réponse LS2 non valide : " + response)
+                                    new Error("Invalid LS2 response: " + response)
                                 );
                                 return;
                             }
 
-                            log("Réponse LS2 : " + JSON.stringify(payload));
+                            log("LS2 response: " + JSON.stringify(payload));
 
                             if (payload.returnValue !== true) {
                                 finish(
                                     reject,
-                                    new Error(payload.errorText || "Échec de l'appel LS2")
+                                    new Error(payload.errorText || "LS2 call failed")
                                 );
                                 return;
                             }
@@ -339,14 +446,14 @@
                         };
                         var accepted = bridge.call(uri, JSON.stringify(parameters));
                         if (accepted === false) {
-                            var refused = new Error("PalmServiceBridge.call a refusé l'appel.");
-                            log(label + " — erreur : " + refused.message);
+                            var refused = new Error("PalmServiceBridge.call rejected the request.");
+                            log(label + " — error: " + refused.message);
                         } else log(
-                            label + " — envoyé : " +
+                            label + " — sent: " +
                             JSON.stringify({ uri: uri, parameters: parameters })
                         );
                     } catch (error) {
-                        log(label + " — erreur", { message: error && error.message ? error.message : String(error) }, true);
+                        log(label + " — error", { message: error && error.message ? error.message : String(error) }, true);
                         finish(reject, error);
                     }
                 });
@@ -376,22 +483,23 @@
                                 lastState = result.state;
 
                                 if (result.state === "registered") {
-                                    setStatus(rootStatus, "Vérification...", "warn");
-                                    log("Manifest enregistré. Vérification root sur Mac...");
+                                    setStatus(rootStatus, "Verifying...", "warn");
+                                    log("Manifest registered. Verifying root access on Mac...");
                                 }
 
                                 if (result.state === "verified") {
                                     setStatus(rootStatus, "ROOT OK", "ok");
-                                    setStatus(bootstrapStatus, "Terminé", "ok");
+                                    setStatus(bootstrapStatus, "Complete", "ok");
 
-                                    sliderLabel.textContent = "Bootstrap réussi !";
-                                    log("SUCCESS : exécution root confirmée par le Mac");
+                                    sliderLabel.textContent = "Bootstrap successful!";
+                                    sliderPanel.classList.add("is-complete");
+                                    log("SUCCESS: root execution confirmed by Mac");
                                     return;
                                 }
 
                                 if (result.state === "error") {
-                                    setStatus(rootStatus, "Échec", "err");
-                                    log("ERREUR : " + (result.message || "Échec"));
+                                    setStatus(rootStatus, "Failed", "err");
+                                    log("ERROR: " + (result.message || "Failed"));
                                     return;
                                 }
                             }
@@ -399,7 +507,7 @@
                             setTimeout(poll, 1000);
                         })
                         .catch(function (error) {
-                            log("Lecture du statut : " + error.message);
+                            log("Status check: " + error.message);
                             setTimeout(poll, 2000);
                         });
                 }
@@ -416,38 +524,38 @@
                 started = true;
                 slider.disabled = true;
 
-                sliderLabel.textContent = "Bootstrap en cours...";
+                sliderLabel.textContent = "Bootstrap in progress...";
 
                 setStatus(
                     bootstrapStatus,
-                    "En cours",
+                    "In progress",
                     "warn"
                 );
 
                 setStatus(
                     rootStatus,
-                    "En attente",
+                    "Waiting",
                     "muted"
                 );
 
-                log("Slider confirmé à 100 %");
+                log("Slider reached 100%");
 
                 report("running", "Bootstrap started")
                     .then(function () {
                         return registerManifest();
                     })
                     .then(function () {
-                        log("Enregistrement LS2 confirmé");
+                        log("LS2 registration confirmed");
 
                         setStatus(
                             bootstrapStatus,
-                            "Enregistré",
+                            "Registered",
                             "ok"
                         );
 
                         setStatus(
                             rootStatus,
-                            "Vérification sur Mac",
+                            "Verifying on Mac",
                             "warn"
                         );
 
@@ -461,18 +569,18 @@
                             ? error.message
                             : String(error);
 
-                        log("ERREUR : " + message);
+                        log("ERROR: " + message);
 
                         setStatus(
                             bootstrapStatus,
-                            "Échec",
+                            "Failed",
                             "err"
                         );
 
                         report("error", message)
                             .catch(function (reportError) {
                                 log(
-                                    "Erreur de communication : " +
+                                    "Communication error: " +
                                     reportError.message
                                 );
                             });
@@ -486,17 +594,17 @@
             if (typeof PalmServiceBridge === "undefined") {
                 setStatus(
                     bridgeStatus,
-                    "Indisponible",
+                    "Unavailable",
                     "err"
                 );
 
                 setStatus(
                     bootstrapStatus,
-                    "Bloqué",
+                    "Blocked",
                     "err"
                 );
 
-                log("PalmServiceBridge introuvable");
+                log("PalmServiceBridge not found");
 
                 report(
                     "error",
@@ -506,49 +614,46 @@
                 return;
             }
 
-            setStatus(
-                bridgeStatus,
-                "Disponible",
-                "ok"
-            );
+            setStatus(bridgeStatus, "Available", "ok");
 
-            log("PalmServiceBridge disponible");
+            log("PalmServiceBridge available");
 
             if (!token) {
                 setStatus(
                     sessionStatus,
-                    "Jeton absent",
+                    "Missing token",
                     "err"
                 );
 
-                log("Session serveur indisponible");
+                log("Server session unavailable");
                 return;
             }
 
             setStatus(
                 sessionStatus,
-                "Connectée",
+                "Connected",
                 "ok"
             );
 
             slider.disabled = false;
+            sliderPanel.classList.add("is-ready");
 
-            log("Interface initialisée");
-            log("En attente de confirmation");
+            log("Interface initialized");
+            log("Waiting for confirmation");
             watchRootVerification();
 
             slider.addEventListener("input", function () {
-                var value = Number(slider.value);
+                sliderPanel.classList.add("is-engaged");
+                updateSlider(slider.value);
 
-                progress.textContent = value + " %";
-
-                if (value >= 100) {
+                if (Number(slider.value) >= 100) {
                     startBootstrap();
                 }
             });
 
             slider.addEventListener("change", function () {
-                progress.textContent = slider.value + " %";
+                sliderPanel.classList.add("is-engaged");
+                updateSlider(slider.value);
 
                 if (Number(slider.value) >= 100) {
                     startBootstrap();
