@@ -6,3 +6,5 @@
 .env.*
 secrets/
 results/
+__pycache__/
+*.py[cod]
