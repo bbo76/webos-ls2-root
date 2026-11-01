@@ -1,0 +1,7 @@
+{
+    "id": "com.example.ls2root.v01.manifest",
+    "version": "0.1.0",
+    "serviceFiles": [
+        "services/com.example.ls2root.v01.service"
+    ]
+}

@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>webOS LS2 Bootstrap</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 48px;
+            background: #111827;
+            color: #f9fafb;
+            font-family: Arial, sans-serif;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 36px;
+        }
+
+        p {
+            color: #9ca3af;
+            font-size: 18px;
+        }
+
+        .version {
+            background: #374151;
+            border-radius: 24px;
+            padding: 10px 18px;
+            white-space: nowrap;
+        }
+
+        .panel,
+        .slider-panel {
+            margin-top: 28px;
+            padding: 28px;
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 18px;
+        }
+
+        .line {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 17px 0;
+            gap: 20px;
+            border-bottom: 1px solid #374151;
+            font-size: 20px;
+        }
+
+        .line:last-child {
+            border-bottom: none;
+        }
+
+        .ok {
+            color: #4ade80;
+        }
+
+        .warn {
+            color: #fbbf24;
+        }
+
+        .err {
+            color: #fb7185;
+        }
+
+        .muted {
+            color: #9ca3af;
+        }
+
+        .slider-panel {
+            text-align: center;
+        }
+
+        #slider-label {
+            display: block;
+            margin-bottom: 28px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        #start-slider {
+            width: 100%;
+            height: 96px;
+            margin: 0;
+            background: transparent;
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        #start-slider::-webkit-slider-runnable-track {
+            height: 60px;
+            background: #374151;
+            border: 2px solid #4b5563;
+            border-radius: 40px;
+        }
+
+        #start-slider::-webkit-slider-thumb {
+            width: 88px;
+            height: 88px;
+            margin-top: -16px;
+            background: #2563eb;
+            border: 5px solid #bfdbfe;
+            border-radius: 50%;
+            -webkit-appearance: none;
+            appearance: none;
+            box-shadow: 0 4px 18px rgba(0, 0, 0, .45);
+        }
+
+        #start-slider:focus {
+            outline: none;
+        }
+
+        #start-slider:focus::-webkit-slider-thumb {
+            box-shadow: 0 0 0 9px rgba(59, 130, 246, .25);
+        }
+
+        #start-slider:disabled {
+            opacity: .5;
+        }
+
+        #slider-progress {
+            margin-top: 12px;
+            font-size: 25px;
+            font-weight: bold;
+            color: #93c5fd;
+        }
+
+        .help {
+            margin-top: 14px;
+            color: #9ca3af;
+            font-size: 17px;
+        }
+
+        h3 {
+            margin-top: 30px;
+        }
+
+        pre {
+            min-height: 210px;
+            max-height: 340px;
+            overflow: auto;
+            padding: 24px;
+            background: #030712;
+            color: #86efac;
+            border-radius: 14px;
+            font-size: 16px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+
+        <header>
+            <div>
+                <h1>webOS LS2 Bootstrap</h1>
+                <p>LG webOS · Developer Mode</p>
+            </div>
+            <span class="version">V0.2</span>
+        </header>
+
+        <div class="panel">
+            <div class="line">
+                <span>PalmServiceBridge</span>
+                <strong id="bridge" class="muted">Vérification...</strong>
+            </div>
+
+            <div class="line">
+                <span>Session locale</span>
+                <strong id="session" class="muted">Initialisation...</strong>
+            </div>
+
+            <div class="line">
+                <span>Bootstrap LS2</span>
+                <strong id="bootstrap" class="warn">En attente</strong>
+            </div>
+
+            <div class="line">
+                <span>Vérification root</span>
+                <strong id="root" class="muted">Non vérifiée</strong>
+            </div>
+        </div>
+
+        <div class="slider-panel">
+            <label id="slider-label" for="start-slider">
+                Glisser pour démarrer
+            </label>
+
+            <input id="start-slider" type="range" min="0" max="100" step="10" value="0" disabled>
+
+            <div id="slider-progress">0 %</div>
+
+            <div class="help">
+                Utilise la Magic Remote ou les touches gauche/droite.
+            </div>
+        </div>
+
+        <h3>Journal d'exécution</h3>
+        <pre id="logs"></pre>
+
+    </main>
+
+    <script>
+        (function () {
+            "use strict";
+
+            function $(id) {
+                return document.getElementById(id);
+            }
+
+            var slider = $("start-slider");
+            var progress = $("slider-progress");
+            var sliderLabel = $("slider-label");
+
+            var bridgeStatus = $("bridge");
+            var sessionStatus = $("session");
+            var bootstrapStatus = $("bootstrap");
+            var rootStatus = $("root");
+            var logs = $("logs");
+
+            var query = new URLSearchParams(location.search);
+            var token = query.get("token");
+
+            var started = false;
+
+            function log(message) {
+                var timestamp = new Date().toLocaleTimeString();
+
+                logs.textContent +=
+                    "[" + timestamp + "] " + message + "\n";
+
+                logs.scrollTop = logs.scrollHeight;
+            }
+
+            function setStatus(element, value, className) {
+                element.textContent = value;
+                element.className = className;
+            }
+
+            function report(state, message) {
+                if (!token) {
+                    log("ERREUR : jeton de session absent");
+                    return Promise.reject(
+                        new Error("Missing session token")
+                    );
+                }
+
+                return fetch(
+                    "/status?token=" + encodeURIComponent(token),
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            state: state,
+                            message: message
+                        })
+                    }
+                ).then(function (response) {
+                    if (!response.ok) {
+                        throw new Error(
+                            "HTTP " + response.status
+                        );
+                    }
+                });
+            }
+
+            // ==================================================
+            // LS2 REGISTRATION — EXTENSION POINT
+            // ==================================================
+
+            function registerManifest() {
+                log("Étape d'enregistrement LS2 demandée");
+                var uri = "luna://com.webos.service.bus/addManifestsDir";
+                var prefix = "/media/developer/temp/ls2root-v01";
+                var dirpath = "reference-test";
+                var parameters = { prefix: prefix, dirpath: dirpath };
+                var label = "Charger";
+
+                return new Promise(function (resolve, reject) {
+                    if (typeof window.PalmServiceBridge !== "function") {
+                        var unavailable = new Error("PalmServiceBridge est indisponible. Ouvrez cette page dans tinybrowser sur la TV webOS.");
+                        log(label + " — erreur", { message: unavailable.message }, true); reject(unavailable); return;
+                    }
+                    var settled = false;
+                    var bridge;
+                    function finish(callback, value) { if (!settled) { settled = true; callback(value); } }
+                    try {
+                        bridge = new window.PalmServiceBridge();
+                        bridge.onservicecallback = function (response) {
+                            var payload;
+
+                            try {
+                                payload = JSON.parse(response);
+                            } catch (error) {
+                                finish(
+                                    reject,
+                                    new Error("Réponse LS2 non valide : " + response)
+                                );
+                                return;
+                            }
+
+                            log("Réponse LS2 : " + JSON.stringify(payload));
+
+                            if (payload.returnValue !== true) {
+                                finish(
+                                    reject,
+                                    new Error(payload.errorText || "Échec de l'appel LS2")
+                                );
+                                return;
+                            }
+
+                            finish(resolve, payload);
+                        };
+                        var accepted = bridge.call(uri, JSON.stringify(parameters));
+                        if (accepted === false) {
+                            var refused = new Error("PalmServiceBridge.call a refusé l'appel.");
+                            log(label + " — erreur : " + refused.message);
+                        } else log(
+                            label + " — envoyé : " +
+                            JSON.stringify({ uri: uri, parameters: parameters })
+                        );
+                    } catch (error) {
+                        log(label + " — erreur", { message: error && error.message ? error.message : String(error) }, true);
+                        finish(reject, error);
+                    }
+                });
+            }
+
+            // ==================================================
+            // BOOTSTRAP WORKFLOW
+            // ==================================================
+
+            function watchRootVerification() {
+                var lastState = "";
+
+                function poll() {
+                    if (!token) return;
+
+                    fetch("/result?token=" + encodeURIComponent(token), {
+                        cache: "no-store"
+                    })
+                        .then(function (response) {
+                            if (!response.ok) {
+                                throw new Error("HTTP " + response.status);
+                            }
+                            return response.json();
+                        })
+                        .then(function (result) {
+                            if (result.state !== lastState) {
+                                lastState = result.state;
+
+                                if (result.state === "registered") {
+                                    setStatus(rootStatus, "Vérification...", "warn");
+                                    log("Manifest enregistré. Vérification root sur Mac...");
+                                }
+
+                                if (result.state === "verified") {
+                                    setStatus(rootStatus, "ROOT OK", "ok");
+                                    setStatus(bootstrapStatus, "Terminé", "ok");
+
+                                    sliderLabel.textContent = "Bootstrap réussi !";
+                                    log("SUCCESS : exécution root confirmée par le Mac");
+                                    return;
+                                }
+
+                                if (result.state === "error") {
+                                    setStatus(rootStatus, "Échec", "err");
+                                    log("ERREUR : " + (result.message || "Échec"));
+                                    return;
+                                }
+                            }
+
+                            setTimeout(poll, 1000);
+                        })
+                        .catch(function (error) {
+                            log("Lecture du statut : " + error.message);
+                            setTimeout(poll, 2000);
+                        });
+                }
+
+                poll();
+            }
+
+
+            function startBootstrap() {
+                if (started) {
+                    return;
+                }
+
+                started = true;
+                slider.disabled = true;
+
+                sliderLabel.textContent = "Bootstrap en cours...";
+
+                setStatus(
+                    bootstrapStatus,
+                    "En cours",
+                    "warn"
+                );
+
+                setStatus(
+                    rootStatus,
+                    "En attente",
+                    "muted"
+                );
+
+                log("Slider confirmé à 100 %");
+
+                report("running", "Bootstrap started")
+                    .then(function () {
+                        return registerManifest();
+                    })
+                    .then(function () {
+                        log("Enregistrement LS2 confirmé");
+
+                        setStatus(
+                            bootstrapStatus,
+                            "Enregistré",
+                            "ok"
+                        );
+
+                        setStatus(
+                            rootStatus,
+                            "Vérification sur Mac",
+                            "warn"
+                        );
+
+                        return report(
+                            "registered",
+                            "LS2 manifest registered"
+                        );
+                    })
+                    .catch(function (error) {
+                        var message = error && error.message
+                            ? error.message
+                            : String(error);
+
+                        log("ERREUR : " + message);
+
+                        setStatus(
+                            bootstrapStatus,
+                            "Échec",
+                            "err"
+                        );
+
+                        report("error", message)
+                            .catch(function (reportError) {
+                                log(
+                                    "Erreur de communication : " +
+                                    reportError.message
+                                );
+                            });
+                    });
+            }
+
+            // ==================================================
+            // INITIALIZATION
+            // ==================================================
+
+            if (typeof PalmServiceBridge === "undefined") {
+                setStatus(
+                    bridgeStatus,
+                    "Indisponible",
+                    "err"
+                );
+
+                setStatus(
+                    bootstrapStatus,
+                    "Bloqué",
+                    "err"
+                );
+
+                log("PalmServiceBridge introuvable");
+
+                report(
+                    "error",
+                    "PalmServiceBridge unavailable"
+                ).catch(function () { });
+
+                return;
+            }
+
+            setStatus(
+                bridgeStatus,
+                "Disponible",
+                "ok"
+            );
+
+            log("PalmServiceBridge disponible");
+
+            if (!token) {
+                setStatus(
+                    sessionStatus,
+                    "Jeton absent",
+                    "err"
+                );
+
+                log("Session serveur indisponible");
+                return;
+            }
+
+            setStatus(
+                sessionStatus,
+                "Connectée",
+                "ok"
+            );
+
+            slider.disabled = false;
+
+            log("Interface initialisée");
+            log("En attente de confirmation");
+            watchRootVerification();
+
+            slider.addEventListener("input", function () {
+                var value = Number(slider.value);
+
+                progress.textContent = value + " %";
+
+                if (value >= 100) {
+                    startBootstrap();
+                }
+            });
+
+            slider.addEventListener("change", function () {
+                progress.textContent = slider.value + " %";
+
+                if (Number(slider.value) >= 100) {
+                    startBootstrap();
+                }
+            });
+
+        })();
+    </script>
+
+</body>
+
+</html>

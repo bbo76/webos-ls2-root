@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=com.example.ls2root.v01
+Exec=/media/developer/temp/ls2root-v01/verify-root.sh
+Type=dynamic
