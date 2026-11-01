@@ -1,0 +1,8 @@
+.DS_Store
+*.log
+*.tmp
+*.local
+.env
+.env.*
+secrets/
+results/
