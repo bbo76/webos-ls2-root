@@ -19,9 +19,9 @@ and root access on LG webOS televisions.
 
 ### Prerequisites
 
-- A **Mac** with Terminal, Git, Bash, SSH, `shasum`, and Python 3. The full installation flow also uses `curl`, `openssl`, `lsof`, and `ipconfig`.
-- An LG webOS TV with **Developer Mode enabled** and a working **SSH connection** from your Mac. Developer Mode SSH access does **not** itself mean you have root access.
-- Your Mac and TV connected to a network that permits SSH from Mac to TV. For the interactive bootstrap, the TV must also be able to reach an HTTP server on your Mac (default port `8765`).
+- A **macOS or Linux** machine, or **Windows with WSL**, with Git, Bash, OpenSSH, and Python 3. The scripts also use `curl`, `openssl`, `lsof`, and SHA-256 utilities. **Platform caveat:** `deploy.sh` currently calls `shasum -a 256` (install `shasum` on Linux/WSL if missing), while `install.sh` uses macOS-specific `ipconfig getifaddr en0` for automatic IP detection. On Linux/WSL, set `MAC_IP` explicitly; the TV must be able to reach that address. Native Windows shells are not supported by these Bash scripts without adaptation.
+- An LG webOS TV with **Developer Mode enabled** and a working **SSH connection** from your computer. Developer Mode SSH access does **not** itself mean you have root access.
+- Your computer and TV connected to a network that permits SSH to the TV. For the interactive bootstrap, the TV must also be able to reach an HTTP server on your computer (default port `8765`).
 - A working SSH host alias (default: `lg-tv`), or an explicit `TV_HOST` environment variable.
 
 ### 1. Clone the repository
@@ -41,15 +41,18 @@ Host lg-tv
     User prisoner
     Port 9922
     IdentityFile ~/.ssh/webos_key
+    IdentitiesOnly yes
+    BatchMode yes
+    ConnectTimeout 10
 ```
 
-Replace the IP address, username, port, and key path with the values provided by your own Developer Mode setup. The example is **not** a universal TV configuration.
+Replace the IP address, username, port, and key path with the values provided by your own Developer Mode setup. The example is **not** a universal TV configuration. `IdentitiesOnly yes` restricts authentication to the configured identity, `BatchMode yes` disables interactive password/passphrase prompts, and `ConnectTimeout 10` prevents long connection hangs. These options do not create or authorize an SSH key: the correct key must already be configured and usable without prompting (for example, an unencrypted Developer Mode key or a key already unlocked in an SSH agent). Keep SSH host-key verification enabled; accept and verify the TV's host key during the initial interactive connection.
 
 ```bash
 ssh lg-tv 'id'
 ```
 
-For the automated `install.sh` flow, make sure key-based authentication works without an interactive password prompt:
+Before running either script, make sure key-based authentication works without an interactive prompt:
 
 ```bash
 ssh -o BatchMode=yes lg-tv 'echo "SSH OK"'
@@ -95,7 +98,7 @@ For the interactive bootstrap, use the higher-level installer from the repositor
 bash scripts/install.sh
 ```
 
-If your Mac's IP address cannot be detected via `en0`, set it explicitly (use the address reachable **from the TV**):
+On Linux/WSL, or if macOS cannot detect the correct address via `en0`, set `MAC_IP` explicitly (use the address reachable **from the TV**):
 
 ```bash
 MAC_IP=192.168.1.50 bash scripts/install.sh
@@ -103,7 +106,7 @@ MAC_IP=192.168.1.50 bash scripts/install.sh
 
 You can also override `TV_HOST` and `BOOTSTRAP_PORT` (default `8765`).
 
-When the diagnostic is not yet operational, `install.sh` deploys the files, starts a temporary local HTTP server, and attempts to open **tinybrowser** on the TV. On the TV, follow the on-screen instructions and move the bootstrap slider to **100%** to request manifest registration. The Mac then independently invokes `scripts/verify.sh` to check whether the LS2 diagnostic executed with `uid=0(root)`.
+When the diagnostic is not yet operational, `install.sh` deploys the files, starts a temporary local HTTP server, and attempts to open **tinybrowser** on the TV. On the TV, follow the on-screen instructions and move the bootstrap slider to **100%** to request manifest registration. The computer then independently invokes `scripts/verify.sh` to check whether the LS2 diagnostic executed with `uid=0(root)`.
 
 You can also rerun the verification separately **after** manifest registration:
 
@@ -117,10 +120,10 @@ A successful diagnostic prints `SUCCESS: LS2 service executed as root.` If regis
 
 ### Troubleshooting
 
-- **SSH fails:** Verify the TV IP, Developer Mode status, SSH port, key, and `TV_HOST` setting. Test `ssh lg-tv 'id'` first.
-- **Upload or checksum fails:** Verify that SSH can write to `/media/developer/temp/ls2root-v01/` and that `sha256sum` exists on the TV.
+- **SSH fails:** Verify the TV IP, Developer Mode status, SSH port, authorized key, and `TV_HOST` setting. Test `ssh lg-tv 'id'` first. With `BatchMode yes`, a key or host-key problem fails instead of prompting.
+- **Upload or checksum fails:** Verify that SSH can write to `/media/developer/temp/ls2root-v01/`, that `sha256sum` exists on the TV, and that `shasum` is installed on your computer.
 - **tinybrowser does not open:** Confirm that the TV firmware provides `com.webos.app.tinybrowser` and that the launch request is supported.
-- **Bootstrap page does not load:** Check `MAC_IP`, Mac firewall settings, and whether TCP port `8765` is reachable from the TV.
+- **Bootstrap page does not load:** Check `MAC_IP`, your computer's firewall settings, and whether TCP port `8765` is reachable from the TV.
 - **No root result:** File deployment alone is insufficient. Complete manifest registration, then rerun `bash scripts/verify.sh`.
 - **Homebrew missing / `ROOT_RUNNER` error:** This is a separate installation prerequisite, not proof that the LS2 diagnostic failed.
 
